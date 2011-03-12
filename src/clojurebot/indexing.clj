@@ -4,15 +4,18 @@
             [org.danlarkin.json :as json])
   (:import (java.net URL URLEncoder)))
 
+(def *host* "localhost")
+
 (defn index* [place time doc]
-  (http/put (format "http://0.0.0.0:9200/irc/msg/%s-%s"
-                    place time)
+  (http/put (format "http://%s:9200/irc/msg/%s-%s"
+                    *host* place time)
             {:body (json/encode doc)}))
 
 (def page-size 4)
 
 (defn query [string page]
-  (->> (http/get (format "http://localhost:9200/irc/_search")
+  (->> (http/get (format "http://%s:9200/irc/_search"
+                         *host*)
                  {:query-params {:q string
                                  :size 4
                                  :from (* page page-size)
