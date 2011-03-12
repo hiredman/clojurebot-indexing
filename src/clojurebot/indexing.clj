@@ -10,9 +10,14 @@
               println)
             {:body (json/encode doc)}))
 
-(defn query [string]
+(def page-size 4)
+
+(defn query [string page]
   (->> (http/get (format "http://localhost:9200/irc/_search")
-                 {:query-params {:q (URLEncoder/encode string)}})
+                 {:query-params {:q string
+                                 :size 4
+                                 :from (* page page-size)
+                                 :sort "time:desc"}})
        :body
        json/decode
        :hits
@@ -31,7 +36,15 @@
 
 (defn search [{:keys [message]}]
   (let [x (.replaceAll message "^search for " "")
-        r (take 4 (query x))
+        brack (.lastIndexOf x "[")
+        x1 (if (pos? brack)
+             (.trim (subs x 0 (dec brack)))
+             x)
+        page (if (pos? brack)
+               (Long/parseLong (subs x (inc brack) (.lastIndexOf x "]")))
+               0)
+        r (query x1 page)
         r (for [{:keys [channel sender time message]} r]
             (format "<%s:%s> %s" channel sender message))]
-    (apply str (interpose \newline r))))
+    (when (seq r)
+      (apply str (interpose \newline r)))))
