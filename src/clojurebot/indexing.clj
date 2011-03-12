@@ -5,9 +5,8 @@
   (:import (java.net URL URLEncoder)))
 
 (defn index* [place time doc]
-  (http/put (doto (format "http://0.0.0.0:9200/irc/msg/%s-%s"
-                          place time)
-              println)
+  (http/put (format "http://0.0.0.0:9200/irc/msg/%s-%s"
+                    place time)
             {:body (json/encode doc)}))
 
 (def page-size 4)
