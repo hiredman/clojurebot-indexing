@@ -1,4 +1,5 @@
 (ns clojurebot.indexing
+  (:use [clojurebot.coreII :only [remove-nick-prefix-fn]])
   (:require [clj-http.client :as http]
             [org.danlarkin.json :as json])
   (:import (java.net URL URLEncoder)))
@@ -21,7 +22,8 @@
 (defn index [bag]
   (let [{:keys [channel time] :as msg}
         (select-keys bag [:sender :channel :message :type :time])]
-    (when-not (.startsWith (:message msg) "search for")
+    (when-not (.startsWith (remove-nick-prefix-fn (:bot bag) (:message msg))
+                           "search for")
       (index* (URLEncoder/encode channel) time msg))))
 
 (defn search? [{:keys [message]}]
