@@ -41,16 +41,18 @@
 (defn search? [{:keys [message]}]
   (.startsWith message "search for"))
 
-(defn search [{:keys [message]}]
-  (let [x (.replaceAll message "^search for " "")
-        brack (.lastIndexOf x "[")
-        qstring (if (pos? brack)
-                  (.trim (subs x 0 (dec brack)))
-                  x)
-        page (if (pos? brack)
-               (Long/parseLong (subs x (inc brack) (.lastIndexOf x "]")))
-               0)
-        r (for [{:keys [channel sender time message]} (query qstring page)]
-            (format "<%s:%s> %s" channel sender message))]
-    (when (seq r)
-      (apply str (interpose \newline r)))))
+(defn search [{:keys [message] {:keys [es-host es-port]} :config}]
+  (binding [*host* (or es-host *host*)
+            *port* (or es-port *port*)]
+    (let [x (.replaceAll message "^search for " "")
+          brack (.lastIndexOf x "[")
+          qstring (if (pos? brack)
+                    (.trim (subs x 0 (dec brack)))
+                    x)
+          page (if (pos? brack)
+                 (Long/parseLong (subs x (inc brack) (.lastIndexOf x "]")))
+                 0)
+          r (for [{:keys [channel sender time message]} (query qstring page)]
+              (format "<%s:%s> %s" channel sender message))]
+      (when (seq r)
+        (apply str (interpose \newline r))))))
