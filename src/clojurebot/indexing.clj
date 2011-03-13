@@ -54,5 +54,6 @@
                  0)
           r (for [{:keys [channel sender time message]} (query qstring page)]
               (format "<%s:%s> %s" channel sender message))]
-      (when (seq r)
-        (apply str (interpose \newline r))))))
+      (if (seq r)
+        (apply str (interpose \newline r))
+        "No results."))))
