@@ -34,8 +34,10 @@
 (defn index [bag]
   (let [{:keys [channel time] :as msg}
         (select-keys bag [:sender :channel :message :type :time])]
-    (when-not (.startsWith (remove-nick-prefix-fn (:bot bag) (:message msg))
-                           "search for")
+    (when (and (:message msg)
+               (not (.startsWith (remove-nick-prefix-fn (:message msg)
+                                                        (:nick (:config bag)))
+                                 "search for")))
       (index* (URLEncoder/encode channel) time msg))))
 
 (defn search? [{:keys [message]}]
